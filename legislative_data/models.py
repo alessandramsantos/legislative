@@ -12,7 +12,7 @@ class Person(models.Model):
 class Bill(models.Model):
     id = models.IntegerField(primary_key=True, serialize=False, verbose_name='ID')
     title = models.CharField(max_length=50)
-    primary_sponsor = models.ForeignKey(Person, on_delete=models.CASCADE)
+    sponsor_id = models.ForeignKey(Person, on_delete=models.CASCADE)
    
     def __str__(self) -> str:
         return self.title

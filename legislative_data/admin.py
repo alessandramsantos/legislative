@@ -29,7 +29,10 @@ class CsvUploadAdmin(admin.ModelAdmin):
             file_data = list(csv.reader(io.TextIOWrapper(csv_file.open()), delimiter=","))
 
             for data in file_data[1:]:
-                self.process_csv(data)
+                try:
+                    self.process_csv(data)
+                except Exception as err:
+                    messages.warning(request, err)
             url = reverse("admin:index")
             return HttpResponseRedirect(url)
 
@@ -47,8 +50,21 @@ class PersonAdmin(CsvUploadAdmin):
             id, name = file_data
             Person.objects.update_or_create(id=id, name=name)
 
+class BillAdmin(CsvUploadAdmin):
+    list_display = ("id", "title", "sponsor_id")
+    
+    def process_csv(self, file_data):
+        id, title, sponsor_id = file_data
+        print(sponsor_id)
+        try:
+            primary_sponsor = Person.objects.get(id=sponsor_id)
+            Bill.objects.update_or_create(id=id, title=title, sponsor_id=primary_sponsor)
+        except Exception as err:
+            raise ValueError(
+                f"Couldn't find Legislator with id: '{sponsor_id}'"
+            )
 
 admin.site.register(Person, PersonAdmin)
-# admin.site.register(Bill, BillsAdmin)
+admin.site.register(Bill, BillAdmin)
 # admin.site.register(Vote, VoteAdmin)
 # admin.site.register(VoteResult, VoteResultAdmin)
