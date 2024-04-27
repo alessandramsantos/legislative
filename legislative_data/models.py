@@ -6,7 +6,7 @@ class Person(models.Model):
     name = models.CharField(max_length=50)
 
     def __str__(self) -> str:
-        return self.name
+        return str(self.id)
     
 
 class Bill(models.Model):
@@ -15,7 +15,7 @@ class Bill(models.Model):
     sponsor_id = models.ForeignKey(Person, on_delete=models.CASCADE)
    
     def __str__(self) -> str:
-        return self.title
+        return str(self.id)
     
 
 class Vote(models.Model):
@@ -23,7 +23,7 @@ class Vote(models.Model):
     bill_id = models.ForeignKey(Bill, on_delete=models.CASCADE)
    
     def __str__(self) -> str:
-        return self.id
+        return str(self.id)
     
 
 class VoteResult(models.Model):
@@ -33,4 +33,4 @@ class VoteResult(models.Model):
     vote_type = models.IntegerField()
    
     def __str__(self) -> str:
-        return self.id
+        return str(self.id)
