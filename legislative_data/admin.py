@@ -11,7 +11,7 @@ from .models import Bill, Person, Vote, VoteResult
 class CsvImportForm(forms.Form):
     csv_upload = forms.FileField(label="CSV File")
 
-class CsvUploadAdmin(admin.ModelAdmin):
+class BaseAdmin(admin.ModelAdmin):
 
     def get_urls(self):
         urls = super().get_urls()
@@ -42,16 +42,33 @@ class CsvUploadAdmin(admin.ModelAdmin):
     
     def process_csv(self, file_data):
         raise NotImplementedError()
+    
 
-class PersonAdmin(CsvUploadAdmin):
-    list_display = ("id", "name")
+class PersonAdmin(BaseAdmin):
+    list_display = ["id", "name"]
+    fields = ["id", "name", "supported_bills", "opposed_bills"]
+    readonly_fields = ["supported_bills", "opposed_bills"]
     
     def process_csv(self, file_data):
             id, name = file_data
             Person.objects.update_or_create(id=id, name=name)
 
-class BillAdmin(CsvUploadAdmin):
-    list_display = ("id", "title", "sponsor_id")
+    def supported_bills(self, obj):
+        supported_bills = VoteResult.objects.filter(legislator_id=obj.id, vote_type=1).count()
+        return supported_bills
+    
+    supported_bills.short_description = "Supported Bills"
+    
+    def opposed_bills(self, obj):
+        opposed_bills = VoteResult.objects.filter(legislator_id=obj.id, vote_type=2).count()
+        return opposed_bills
+    
+    opposed_bills.short_description = "Opposed Bills"
+
+class BillAdmin(BaseAdmin):
+    list_display = ["id", "title", "sponsor_id"]
+    fields = ["id", "title", "primary_sponsor", "supported_legislators", "opposed_legislators"]
+    readonly_fields = ["supported_legislators", "opposed_legislators", "primary_sponsor"]
     
     def process_csv(self, file_data):
         id, title, sponsor_id = file_data
@@ -62,10 +79,26 @@ class BillAdmin(CsvUploadAdmin):
             raise ValueError(
                 f"Couldn't find Legislator with id: '{sponsor_id}'"
             )
-        
 
-class VoteAdmin(CsvUploadAdmin):
-    list_display = ("id", "bill_id")
+    def supported_legislators(self, obj):
+        supported_legislators = VoteResult.objects.filter(vote_id__bill_id=obj.id, vote_type=1).count()
+        return supported_legislators
+    
+    supported_legislators.short_description = "Supported Legislators"
+
+    def opposed_legislators(self, obj):
+        opposed_legislators = VoteResult.objects.filter(vote_id__bill_id=obj.id, vote_type=2).count()
+        return opposed_legislators
+    
+    opposed_legislators.short_description = "Opposed Legislators"
+
+    def primary_sponsor(self, obj):
+        return obj.sponsor_id.name
+    
+    primary_sponsor.short_description = "Primary Sponsor"
+
+class VoteAdmin(BaseAdmin):
+    list_display = ["id", "bill_id"]
     
     def process_csv(self, file_data):
         id, bill_id = file_data
@@ -78,8 +111,8 @@ class VoteAdmin(CsvUploadAdmin):
             )
         
 
-class VoteResultAdmin(CsvUploadAdmin):
-    list_display = ("id", "legislator_id", "vote_id", "vote_type")
+class VoteResultAdmin(BaseAdmin):
+    list_display = ["id", "legislator_id", "vote_id", "vote_type"]
     
     def process_csv(self, file_data):
         id, legislator_id, vote_id, vote_type = file_data
