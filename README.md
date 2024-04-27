@@ -7,7 +7,7 @@ Python 3.7 or later
 Django 3.2 or later
 Other dependencies listed in the requirements.txt file
 
-Installation
+## Installation
 Clone the project repository to your local machine.
 
 - Create a virtual environment for the project.
@@ -22,6 +22,11 @@ source venv/bin/activate
 
 pip install -r requirements.txt
 
+## Execution
+- Run the migrations to create the necessary database tables.
+
+python manage.py migrate
+
 ## Configuration
 
 - Create an admin user to access the Django admin interface.
@@ -30,11 +35,6 @@ python manage.py createsuperuser
 
 - Data Import - CSV Upload:
 Use the Django admin interface to import data from the provided CSV files (persons.csv, bills.csv, votes.csv, vote_results.csv) into the application. The upload forms are available in the admin pages for Persons, Bills, Vote Results and Votes models.
-
-## Execution
-- Run the migrations to create the necessary database tables.
-
-python manage.py migrate
 
 ## Start the Django development server.
 
